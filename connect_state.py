@@ -1,6 +1,7 @@
 # Abstract
 # Types
 from typing import Any, List, Optional
+from collections import deque
 
 import matplotlib.pyplot as plt
 
@@ -23,7 +24,6 @@ class ConnectState(EnvironmentState):
         raise NotImplementedError("Method is_final must be implemented.")
 
     def is_applicable(self, event: Any) -> bool:
-        """See base class."""
         raise NotImplementedError("Method is_applicable must be implemented.")
 
     def transition(self, col: int) -> "EnvironmentState":
@@ -39,34 +39,46 @@ class ConnectState(EnvironmentState):
         int
             -1 if red has won, 1 if yellow has won, 0 if no winner.
         """
-        raise NotImplementedError("Method get_winner must be implemented.")
+
+        print("Executing get winner")
+        self.show()
+
+        visited = set()
+
+        for row in range(self.height):
+            for col in range(self.width):
+                cell_pos = (row, col)
+                cell_value = self.state[cell_pos[0]][cell_pos[1]]
+
+                if cell_pos in visited or cell_value == 0:
+                    continue
+
+                DIRECTIONS = ((0, 1), (1, 0), (1, 1), (-1, 1))
+
+                for direction in DIRECTIONS:
+
+                    direction_inverse = (direction[0] * -1, direction[1] * -1)
+
+                    direction_val = depth_in_direction(
+                        cell_pos, cell_value,
+                        direction, self.state, visited)
+                    direction_inverse_val = depth_in_direction(
+                        cell_pos, cell_value,
+                        direction_inverse, self.state, visited)
+
+                    print(f"For direction: {direction} the total val was: {
+                        direction_val + direction_inverse_val}")
+                    if direction_val + direction_inverse_val >= 4:
+                        return cell_value
+
+        return 0
 
     def is_col_free(self, col: int) -> bool:
-        """
-        Checks if a tile can be placed in the specified column.
-
-        Parameters
-        ----------
-        col : int
-            Index of the column.
-
-        Returns
-        -------
-        bool
-            True if the column has space for a tile; False otherwise.
-        """
-        raise NotImplementedError("Method is_col_free must be implemented.")
+        if self.state[0][col] == 0:
+            return True
+        return False
 
     def get_heights(self) -> List[int]:
-        """
-        Gets the number of tiles placed in each column.
-
-        Returns
-        -------
-        List[int]
-            A list of integers indicating the number of tiles per column.
-        """
-
         heights = [self.height for i in range(self.width)]
 
         for col in range(self.width):
@@ -79,15 +91,12 @@ class ConnectState(EnvironmentState):
         return heights
 
     def get_free_cols(self) -> List[int]:
-        """
-        Gets the list of columns where a tile can still be placed.
+        free_cools = []
+        for col in range(self.width):
+            if self.state[0][col] == 0:
+                free_cools.append(col)
 
-        Returns
-        -------
-        List[int]
-            Indices of columns with at least one free cell.
-        """
-        raise NotImplementedError("Method get_free_cols must be implemented.")
+        return free_cools
 
     def show(self) -> None:
         symbols = {
@@ -106,6 +115,18 @@ class ConnectState(EnvironmentState):
 
         print("-" * (2 * cols - 1))
         print(" ".join(str(c) for c in range(cols)))
+
+
+def depth_in_direction(cell_pos, cell_value, direction, board, visited):
+    if (cell_pos[0] < 0 or cell_pos[0] >= len(board)
+            or cell_pos[1] < 0 or cell_pos[1] >= len(board[0])
+            or board[cell_pos[0]][cell_pos[1]] != cell_value):
+        return 0
+
+    cell_pos = (cell_pos[0] + direction[0], cell_pos[1] + direction[1])
+    visited.add(cell_pos)
+
+    return depth_in_direction(cell_pos, cell_value, direction, board, visited) + 1
 
 
 def main():
