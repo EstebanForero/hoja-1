@@ -1,19 +1,22 @@
 # Abstract
-from environment_state import EnvironmentState
-
 # Types
-from typing import Optional, List, Any
+from typing import Any, List, Optional
+
+import matplotlib.pyplot as plt
 
 # Libraries
 import numpy as np
-import matplotlib.pyplot as plt
+
+from environment_state import EnvironmentState
+
+E = (1, 2, 3, 4, 5, 6, 7)
 
 
 class ConnectState(EnvironmentState):
-
     def __init__(self, board: Optional[np.ndarray] = None):
-
-        raise NotImplementedError("Class constructor must be implemented.")
+        self.state = board
+        self.height = len(board)
+        self.width = len(board[0])
 
     def is_final(self) -> bool:
         """See base class."""
@@ -63,7 +66,17 @@ class ConnectState(EnvironmentState):
         List[int]
             A list of integers indicating the number of tiles per column.
         """
-        raise NotImplementedError("Method get_heights must be implemented.")
+
+        heights = [self.height for i in range(self.width)]
+
+        for col in range(self.width):
+            for row in range(self.height):
+                if self.state[row][col] == 0:
+                    heights[col] -= 1
+                else:
+                    break
+
+        return heights
 
     def get_free_cols(self) -> List[int]:
         """
@@ -76,22 +89,29 @@ class ConnectState(EnvironmentState):
         """
         raise NotImplementedError("Method get_free_cols must be implemented.")
 
-    def show(self, size: int = 1500, ax: Optional[plt.Axes] = None) -> None:
-        if ax is None:
-            fig, ax = plt.subplots()
-        else:
-            fig = None
+    def show(self) -> None:
+        symbols = {
+            1: "Y",
+            -1: "R",
+            0: "."
+        }
 
-        pos_red = np.where(self.board == -1)
-        pos_yellow = np.where(self.board == 1)
+        rows, cols = self.state.shape
 
-        ax.scatter(pos_yellow[1] + 0.5, 5.5 -
-                   pos_yellow[0], color="yellow", s=size)
-        ax.scatter(pos_red[1] + 0.5, 5.5 - pos_red[0], color="red", s=size)
+        print()
+        for r in range(rows):
+            for c in range(cols):
+                print(symbols[self.state[r, c]], end=" ")
+            print()
 
-        ax.set_ylim([0, self.board.shape[0]])
-        ax.set_xlim([0, self.board.shape[1]])
-        ax.grid()
+        print("-" * (2 * cols - 1))
+        print(" ".join(str(c) for c in range(cols)))
 
-        if fig is not None:
-            plt.show()
+
+def main():
+    cns = ConnectState(np.array([[0 for i in range(7)] for i in range(6)]))
+    print(cns.state)
+    cns.show()
+
+
+main()
