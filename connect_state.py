@@ -34,7 +34,7 @@ class ConnectState(EnvironmentState):
         board = self.board.copy()
 
         num_located_tiles = sum(self.get_heights())
-        player = 1 if num_located_tiles % 2 == 0 else -1
+        player = -1 if num_located_tiles % 2 == 0 else 1
 
         for row in range(self.height):
             if board[self.height - 1 - row][event] == 0:
