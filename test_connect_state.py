@@ -114,16 +114,16 @@ def test_transition():
     cns = ConnectState(np.array([[0 for i in range(7)] for i in range(6)]))
 
     cns.show()
-    cns = cns.transition(1)
+    cns = cns.transition(0)
     cns.show()
     assert cns.state[cns.height - 1][0] == 1
     assert cns.state[cns.height - 2][0] == 0
 
-    cns = cns.transition(1)
+    cns = cns.transition(0)
     cns.show()
     assert cns.state[cns.height - 2][0] == -1
     assert cns.state[cns.height - 3][0] == 0
 
-    cns = cns.transition(3)
+    cns = cns.transition(2)
     cns.show()
     assert cns.state[cns.height - 1][2] == 1

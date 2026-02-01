@@ -23,8 +23,7 @@ class ConnectState(EnvironmentState):
         return False
 
     def is_applicable(self, event: Any) -> bool:
-        col_index = event - 1
-        if not self.is_col_free(col_index):
+        if not self.is_col_free(event):
             return False
         return True
 
@@ -34,14 +33,12 @@ class ConnectState(EnvironmentState):
 
         state = self.state.copy()
 
-        col_index = event - 1
-
         num_located_tiles = sum(self.get_heights())
         player = 1 if num_located_tiles % 2 == 0 else -1
 
         for row in range(self.height):
-            if state[self.height - 1 - row][col_index] == 0:
-                state[self.height - 1 - row][col_index] = player
+            if state[self.height - 1 - row][event] == 0:
+                state[self.height - 1 - row][event] = player
                 break
 
         return ConnectState(state)
