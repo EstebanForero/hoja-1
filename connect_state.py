@@ -1,16 +1,10 @@
 # Abstract
 # Types
 from typing import Any, List, Optional
-from collections import deque
-
-import matplotlib.pyplot as plt
-
 # Libraries
 import numpy as np
 
 from environment_state import EnvironmentState
-
-E = (1, 2, 3, 4, 5, 6, 7)
 
 
 class ConnectState(EnvironmentState):
@@ -20,29 +14,36 @@ class ConnectState(EnvironmentState):
         self.width = len(board[0])
 
     def is_final(self) -> bool:
-        """See base class."""
-        raise NotImplementedError("Method is_final must be implemented.")
+        if len(self.get_free_cols()) == 0 or self.get_winner() != 0:
+            return True
+
+        return False
 
     def is_applicable(self, event: Any) -> bool:
-        raise NotImplementedError("Method is_applicable must be implemented.")
+        col_index = event - 1
+        if not self.is_col_free(col_index):
+            return False
+        return True
 
-    def transition(self, col: int) -> "EnvironmentState":
-        """See base class."""
-        raise NotImplementedError("Method put must be implemented.")
+    def transition(self, event: int) -> "EnvironmentState":
+        if not self.is_applicable(event):
+            return None
+
+        state = self.state.copy()
+
+        col_index = event - 1
+
+        num_located_tiles = sum(self.get_heights())
+        player = 1 if num_located_tiles % 2 == 0 else -1
+
+        for row in range(self.height):
+            if state[self.height - 1 - row][col_index] == 0:
+                state[self.height - 1 - row][col_index] = player
+                break
+
+        return ConnectState(state)
 
     def get_winner(self) -> int:
-        """
-        Determines the winner in the current state.
-
-        Returns
-        -------
-        int
-            -1 if red has won, 1 if yellow has won, 0 if no winner.
-        """
-
-        print("Executing get winner")
-        self.show()
-
         visited = set()
 
         for row in range(self.height):
@@ -61,13 +62,11 @@ class ConnectState(EnvironmentState):
 
                     direction_val = depth_in_direction(
                         cell_pos, cell_value,
-                        direction, self.state, visited)
+                        direction, self.state, visited) - 1
                     direction_inverse_val = depth_in_direction(
                         cell_pos, cell_value,
                         direction_inverse, self.state, visited)
 
-                    print(f"For direction: {direction} the total val was: {
-                        direction_val + direction_inverse_val}")
                     if direction_val + direction_inverse_val >= 4:
                         return cell_value
 
@@ -123,16 +122,25 @@ def depth_in_direction(cell_pos, cell_value, direction, board, visited):
             or board[cell_pos[0]][cell_pos[1]] != cell_value):
         return 0
 
-    cell_pos = (cell_pos[0] + direction[0], cell_pos[1] + direction[1])
     visited.add(cell_pos)
+    cell_pos = (cell_pos[0] + direction[0], cell_pos[1] + direction[1])
 
     return depth_in_direction(cell_pos, cell_value, direction, board, visited) + 1
 
 
 def main():
-    cns = ConnectState(np.array([[0 for i in range(7)] for i in range(6)]))
-    print(cns.state)
-    cns.show()
+    state = ConnectState(np.array([[0 for i in range(7)] for i in range(6)]))
+
+    while not state.is_final():
+        state.show()
+        event = int(input("event (1-7): "))
+        if state.is_applicable(event):
+            state = state.transition(event)
+        else:
+            print("Invalid event")
+
+    print("Final reached, the winner is: ", state.get_winner())
 
 
-main()
+if __name__ == "__main__":
+    main()

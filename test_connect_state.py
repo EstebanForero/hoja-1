@@ -75,6 +75,11 @@ def test_get_winner():
         cns.state[cns.height - 1][i] = 1
     assert cns.get_winner() == 1
 
+    cns = ConnectState(np.array([[0 for i in range(7)] for i in range(6)]))
+    for i in range(3):
+        cns.state[cns.height - 1][i] = 1
+    assert cns.get_winner() == 0
+
     # Vertical (|) check
 
     cns = ConnectState(np.array([[0 for i in range(7)] for i in range(6)]))
@@ -89,3 +94,36 @@ def test_get_winner():
 
     cns = ConnectState(np.array([[-1 for i in range(7)] for i in range(6)]))
     assert cns.get_winner() == -1
+
+    # Custom array check
+
+    board = np.array([
+        [0, 0, -1, 0, 0, -1, 0],
+        [0, 0,  0, 1, 1,  1, 1],
+        [0, 0,  0, 0, 0,  0, 0],
+        [0, 0,  0, 0, 0,  0, 0],
+        [0, 0,  0, 0, 0,  0, 0],
+        [0, 0,  0, 0, 0,  0, 0],
+    ])
+
+    cns = ConnectState(board)
+    assert cns.get_winner() == 1
+
+
+def test_transition():
+    cns = ConnectState(np.array([[0 for i in range(7)] for i in range(6)]))
+
+    cns.show()
+    cns = cns.transition(1)
+    cns.show()
+    assert cns.state[cns.height - 1][0] == 1
+    assert cns.state[cns.height - 2][0] == 0
+
+    cns = cns.transition(1)
+    cns.show()
+    assert cns.state[cns.height - 2][0] == -1
+    assert cns.state[cns.height - 3][0] == 0
+
+    cns = cns.transition(3)
+    cns.show()
+    assert cns.state[cns.height - 1][2] == 1
