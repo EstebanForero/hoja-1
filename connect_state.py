@@ -10,7 +10,7 @@ from environment_state import EnvironmentState
 class ConnectState(EnvironmentState):
     def __init__(self, board: Optional[np.ndarray] = None):
         if board is None:
-            self.board = np.array([[0 for i in range(7)] for i in range(6)])
+            board = np.array([[0 for i in range(7)] for i in range(6)])
 
         self.state = board
         self.height = len(board)
