@@ -12,7 +12,7 @@ class ConnectState(EnvironmentState):
         if board is None:
             board = np.array([[0 for i in range(7)] for i in range(6)])
 
-        self.state = board
+        self.board = board
         self.height = len(board)
         self.width = len(board[0])
 
@@ -31,17 +31,17 @@ class ConnectState(EnvironmentState):
         if not self.is_applicable(event):
             raise ValueError("Invalid move")
 
-        state = self.state.copy()
+        board = self.board.copy()
 
         num_located_tiles = sum(self.get_heights())
         player = 1 if num_located_tiles % 2 == 0 else -1
 
         for row in range(self.height):
-            if state[self.height - 1 - row][event] == 0:
-                state[self.height - 1 - row][event] = player
+            if board[self.height - 1 - row][event] == 0:
+                board[self.height - 1 - row][event] = player
                 break
 
-        return ConnectState(state)
+        return ConnectState(board)
 
     def get_winner(self) -> int:
         visited = set()
@@ -49,7 +49,7 @@ class ConnectState(EnvironmentState):
         for row in range(self.height):
             for col in range(self.width):
                 cell_pos = (row, col)
-                cell_value = self.state[cell_pos[0]][cell_pos[1]]
+                cell_value = self.board[cell_pos[0]][cell_pos[1]]
 
                 if cell_pos in visited or cell_value == 0:
                     continue
@@ -62,10 +62,10 @@ class ConnectState(EnvironmentState):
 
                     direction_val = depth_in_direction(
                         cell_pos, cell_value,
-                        direction, self.state, visited) - 1
+                        direction, self.board, visited) - 1
                     direction_inverse_val = depth_in_direction(
                         cell_pos, cell_value,
-                        direction_inverse, self.state, visited)
+                        direction_inverse, self.board, visited)
 
                     if direction_val + direction_inverse_val >= 4:
                         return cell_value
@@ -73,7 +73,7 @@ class ConnectState(EnvironmentState):
         return 0
 
     def is_col_free(self, col: int) -> bool:
-        if self.state[0][col] == 0:
+        if self.board[0][col] == 0:
             return True
         return False
 
@@ -82,7 +82,7 @@ class ConnectState(EnvironmentState):
 
         for col in range(self.width):
             for row in range(self.height):
-                if self.state[row][col] == 0:
+                if self.board[row][col] == 0:
                     heights[col] -= 1
                 else:
                     break
@@ -92,7 +92,7 @@ class ConnectState(EnvironmentState):
     def get_free_cols(self) -> List[int]:
         free_cools = []
         for col in range(self.width):
-            if self.state[0][col] == 0:
+            if self.board[0][col] == 0:
                 free_cools.append(col)
 
         return free_cools
@@ -104,12 +104,12 @@ class ConnectState(EnvironmentState):
             0: "."
         }
 
-        rows, cols = self.state.shape
+        rows, cols = self.board.shape
 
         print()
         for r in range(rows):
             for c in range(cols):
-                print(symbols[self.state[r, c]], end=" ")
+                print(symbols[self.board[r, c]], end=" ")
             print()
 
         print("-" * (2 * cols - 1))
