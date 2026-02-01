@@ -23,6 +23,9 @@ class ConnectState(EnvironmentState):
         return False
 
     def is_applicable(self, event: Any) -> bool:
+        if not isinstance(event, int):
+            return False
+
         if event < 0 or event >= self.width or not self.is_col_free(event):
             return False
         return True
